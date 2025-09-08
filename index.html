@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>科学课投票系统</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Noto Sans SC', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 50px rgba(0, 119, 182, 0.15);
+            padding: 35px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .science-header {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 150px;
+            height: 150px;
+            background: linear-gradient(135deg, #0077b6 0%, #00b4d8 100%);
+            border-radius: 0 0 0 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 40px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f4f8;
+            position: relative;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .subtitle {
+            color: #0077b6;
+            font-size: 18px;
+            font-weight: 500;
+            margin-top: 5px;
+        }
+        
+        .system-title {
+            background: linear-gradient(to right, #0077b6, #00b4d8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-weight: 700;
+        }
+        
+        .instructions {
+            background-color: #e3f2fd;
+            border-left: 4px solid #0077b6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            font-size: 16px;
+            color: #2c3e50;
+        }
+        
+        .instructions h3 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            color: #0077b6;
+        }
+        
+        .question-section {
+            margin-bottom: 30px;
+            padding: 25px;
+            background: #f8fafc;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        }
+        
+        .question {
+            font-size: 24px;
+            color: #003554;
+            margin-bottom: 25px;
+            font-weight: 600;
+            text-align: center;
+            line-height: 1.4;
+        }
+        
+        .options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            justify-content: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .option-btn {
+            background: #0077b6;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 17px;
+            font-size: 18px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(3, 4, 94, 0.15);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            min-height: 110px;
+        }
+        
+        .option-btn:hover {
+            background: #00629a;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 119, 182, 0.25);
+        }
+        
+        .option-btn .option-letter {
+            position: absolute;
+            top: 10px;
+            right: 12px;
+            font-weight: bold;
+            font-size: 24px;
+            opacity: 0.2;
+        }
+        
+        .option-btn .option-text {
+            z-index: 2;
+            width: 100%;
+        }
+        
+        .result-section {
+            margin-top: 35px;
+            position: relative;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 350px;
+            margin: 25px 10px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+            padding: 20px;
+            background: #f0f8ff;
+            border-radius: 16px;
+            box-shadow: 0 4px 8px rgba(0, 119, 182, 0.1);
+        }
+        
+        .stat-item {
+            text-align: center;
+            flex: 1;
+            padding: 10px;
+        }
+        
+        .stat-value {
+            font-size: 30px;
+            font-weight: 700;
+            color: #0077b6;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 16px;
+            color: #5c7c9c;
+            font-weight: 500;
+        }
+        
+        .thank-you {
+            text-align: center;
+            margin: 20px 0;
+            color: #0077b6;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            height: 40px;
+            font-size: 18px;
+        }
+        
+        .thank-you.show {
+            opacity: 1;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            color: #5c7c9c;
+            font-size: 16px;
+            padding: 15px;
+            width: 100%;
+            max-width: 900px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.6);
+        }
+        
+        .share-section {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        
+        .share-btn {
+            padding: 12px 25px;
+            background: #0077b6;
+            color: white;
+            border-radius: 50px;
+            font-weight: 500;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .share-btn:hover {
+            background: #005d8f;
+            transform: translateY(-2px);
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 28px;
+            }
+            
+            .options {
+                grid-template-columns: 1fr;
+            }
+            
+            .science-header {
+                width: 100px;
+                height: 100px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="science-header">
+            <i class="fas fa-flask"></i>
+        </div>
+        
+        <div class="header">
+            <h1><i class="fas fa-vote-yea"></i> 科学课程投票系统</h1>
+            <p class="subtitle"><span class="system-title">知识点理解 · 互动反馈 · 实时图表</span></p>
+        </div>
+        
+        <div class="instructions">
+            <h3><i class="fas fa-info-circle"></i> 如何使用本系统</h3>
+            <p>1. 选择下方最符合您观点的选项进行投票</p>
+            <p>2. 你的选择将被立即记录（无需登录）</p>
+            <p>3. 系统会实时更新统计数据和柱状图</p>
+            <p>4. 每位学生仅能投票一次，请谨慎选择</p>
+        </div>
+        
+        <div class="question-section">
+            <div class="question">你认为在环境科学创业中，以下哪项挑战最为关键？</div>
+            <div class="options">
+                <button class="option-btn" data-option="A">
+                    <span class="option-letter">A</span>
+                    <span class="option-text">将技术转化为可盈利的商业模式</span>
+                </button>
+                <button class="option-btn" data-option="B">
+                    <span class="option-letter">B</span>
+                    <span class="option-text">获得可持续的研究资金</span>
+                </button>
+                <button class="option-btn" data-option="C">
+                    <span class="option-letter">C</span>
+                    <span class="option-text">满足环保法规要求</span>
+                </button>
+                <button class="option-btn" data-option="D">
+                    <span class="option-letter">D</span>
+                    <span class="option-text">平衡经济效益与环境效益</span>
+                </button>
+            </div>
+        </div>
+        
+        <div class="thank-you" id="thankYou"><i class="fas fa-check-circle"></i> 感谢参与科学课程问卷调查！</div>
+        
+        <div class="result-section">
+            <h2><i class="fas fa-chart-bar"></i> 实时投票分布</h2>
+            <div class="chart-container">
+                <canvas id="voteChart"></canvas>
+            </div>
+            
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalVotes">0</div>
+                    <div class="stat-label">总投票数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="mostVoted">-</div>
+                    <div class="stat-label">最热门选项</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="minVoted">-</div>
+                    <div class="stat-label">最少选择选项</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="share-section">
+            <a href="#" class="share-btn" id="copyLink">
+                <i class="fas fa-link"></i> 复制投票链接
+            </a>
+            
+            <a href="mailto:?subject=科学课程投票参与邀请&body=请参与我们的科学课堂调查投票：请访问 [投票链接]" class="share-btn">
+                <i class="fas fa-envelope"></i> 邮件分享
+            </a>
+            
+            <a href="#" class="share-btn" id="shareWhatsapp">
+                <i class="fab fa-whatsapp"></i> WhatsApp分享
+            </a>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p><i class="fas fa-lock"></i> 隐私保护 > 本系统不收集个人身份信息 | <i class="fas fa-chart-line"></i> 数据仅用于教学研究</p>
+        <p>科学与企业教育研究中心 · 系统更新时间: <span id="updateTime"></span></p>
+    </div>
+
+    <script>
+        // 主投票数据
+        let votesData = {
+            A: 0,
+            B: 0,
+            C: 0,
+            D: 0
+        };
+        
+        let userVoted = false;
+        
+        // 初始化图表
+        const ctx = document.getElementById('voteChart').getContext('2d');
+        const voteChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: [
+                    '商业模式转化 (A)', 
+                    '研究资金 (B)', 
+                    '环保法规 (C)', 
+                    '效益平衡 (D)'
+                ],
+                datasets: [{
+                    label: '投票数',
+                    data: Object.values(votesData),
+                    backgroundColor: [
+                        'rgba(0, 119, 182, 0.7)',
+                        'rgba(3, 4, 94, 0.7)',
+                        'rgba(2, 62, 138, 0.7)',
+                        'rgba(0, 150, 199, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgba(0, 119, 182, 1)',
+                        'rgba(3, 4, 94, 1)',
+                        'rgba(2, 62, 138, 1)',
+                        'rgba(0, 150, 199, 1)'
+                    ],
+                    borderWidth: 2,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: '票数统计',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            font: {
+                                size: 14
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        padding: 12,
+                        backgroundColor: 'rgba(0, 30, 60, 0.9)',
+                        titleFont: {
+                            size: 16
+                        },
+                        bodyFont: {
+                            size: 14
+                        }
+                    },
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: '科学课程投票分布 - 实时更新',
+                        font: {
+                            size: 18,
+                            weight: 'bold'
+                        },
+                        padding: {
+                            top: 10,
+                            bottom: 20
+                        }
+                    }
+                }
+            }
+        });
+        
+        // 更新统计信息
+        function updateStats() {
+            const total = Object.values(votesData).reduce((a, b) => a + b, 0);
+            document.getElementById('totalVotes').textContent = total;
+            
+            // 找到最高票数的选项
+            let maxVotes = 0;
+            let minVotes = Infinity;
+            let mostVoted = '-';
+            let minVoted = '-';
+            
+            for (const option in votesData) {
+                if (votesData[option] > maxVotes) {
+                    maxVotes = votesData[option];
+                    mostVoted = option;
+                }
+                if (votesData[option] < minVotes) {
+                    minVotes = votesData[option];
+                    minVoted = option;
+                }
+            }
+            
+            document.getElementById('mostVoted').textContent = mostVoted;
+            document.getElementById('minVoted').textContent = minVoted;
+        }
+        
+        // 投票按钮事件处理
+        document.querySelectorAll('.option-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                if (userVoted) {
+                    alert('您已完成投票，请勿重复提交');
+                    return;
+                }
+                
+                const option = this.getAttribute('data-option');
+                votesData[option]++;
+                userVoted = true;
+                
+                // 更新图表数据
+                updateChart();
+                updateStats();
+                showThankYou();
+                
+                // 更新按钮外观
+                this.style.background = '#28a745';
+                this.style.boxShadow = '0 4px 10px rgba(40, 167, 69, 0.3)';
+                this.innerHTML = '<i class="fas fa-check"></i> 已完成选择';
+                this.style.pointerEvents = 'none';
+            });
+        });
+        
+        // 更新图表函数
+        function updateChart() {
+            voteChart.data.datasets[0].data = Object.values(votesData);
+            voteChart.update();
+        }
+        
+        // 显示感谢信息
+        function showThankYou() {
+            const thankYou = document.getElementById('thankYou');
+            thankYou.classList.add('show');
+            setTimeout(() => {
+                thankYou.classList.remove('show');
+            }, 5000);
+        }
+        
+        // 初始模拟数据
+        function generateInitialData() {
+            const options = ['A', 'B', 'C', 'D'];
+            const voteCounts = [
+                Math.floor(Math.random() * 10) + 30,
+                Math.floor(Math.random() * 10) + 25,
+                Math.floor(Math.random() * 10) + 20,
+                Math.floor(Math.random() * 10) + 15
+            ];
+            
+            options.forEach((option, index) => {
+                votesData[option] = voteCounts[index];
+            });
+            
+            updateChart();
+            updateStats();
+        }
+        
+        // 模拟实时更新
+        function simulateRealTimeUpdates() {
+            setInterval(() => {
+                if (Math.random() > 0.3) { // 70%几率有新投票
+                    const options = ['A', 'B', 'C', 'D'];
+                    const randomChoice = options[Math.floor(Math.random() * options.length)];
+                    votesData[randomChoice]++;
+                    
+                    // 更新UI
+                    updateChart();
+                    updateStats();
+                }
+            }, 4000);
+        }
+        
+        // 设置更新时间
+        function setUpdateTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            document.getElementById('updateTime').textContent = timeStr;
+        }
+        
+        // 分享按钮功能
+        document.getElementById('copyLink').addEventListener('click', function(e) {
+            e.preventDefault();
+            navigator.clipboard.writeText(window.location.href);
+            alert('投票链接已复制到剪贴板！\n请分享给其他同学');
+        });
+        
+        document.getElementById('shareWhatsapp').addEventListener('click', function(e) {
+            e.preventDefault();
+            const url = 'https://api.whatsapp.com/send?text=' + 
+                         encodeURIComponent('请参与我们的科学课堂投票: ' + window.location.href);
+            window.open(url, '_blank');
+        });
+        
+        // 初始化函数
+        function init() {
+            generateInitialData();
+            setUpdateTime();
+            simulateRealTimeUpdates();
+            
+            // 更新时间标记
+            setInterval(setUpdateTime, 60000);
+        }
+        
+        // 页面加载完成后初始化
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
